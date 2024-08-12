@@ -1,0 +1,247 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+using namespace std;
+
+int rspace(int row, int column, vector<vector<char>>& matriks) {   // This function returns how many spaces are to the right of the entered element
+    int bosluk = 0;
+    for (int i = column + 1; i < matriks[row].size(); i++) {
+        if (matriks[row][i] == '-') { // if it is empty increase the space counter
+            bosluk++;
+        } else {
+           return bosluk;
+        }
+    }
+    return bosluk;
+}
+
+int lspace(int row, int column, vector<vector<char>>& matriks) {    // This function returns how many spaces are to the left of the entered element
+    int bosluk = 0;
+    for (int i = column - 1; i >= 0; --i) {
+        if (matriks[row][i] == '-') {// if it is empty increase the space counter
+            bosluk++;
+        } else {
+            return bosluk;
+        }
+    }
+    return bosluk;
+}
+
+int uspace(int row, int column, vector<vector<char>>& matriks) {   // This function returns how many spaces are to the top of the entered element
+    int bosluk = 0;
+    for (int i = row - 1; i >= 0; --i) {
+        if (matriks[i][column] == '-') {// if it is empty increase the space counter
+            bosluk++;
+        } else {
+            return bosluk;
+        }
+    }
+    return bosluk;
+}
+
+int dspace(int row, int column, vector<vector<char>>& matriks){    // This function returns how many spaces are to the bottom of the entered element
+    int bosluk = 0;
+    for (int i = row + 1; i < matriks.size(); ++i) {// if it is empty increase the space counter
+        if (matriks[i][column] == '-') {
+            bosluk++;
+        } else {
+            return bosluk;
+        }
+    }
+    return bosluk;
+}
+
+bool boslukcheck(vector<vector<char>> matriks){ //This function checks that the entire inside of the matrix is empty space or not.
+    int total = 0;
+    for(int c = 0; c < matriks.size(); c++){
+        for(int d = 0; d < matriks[c].size(); d++){
+            if(matriks[c][d] == '-')// if the element is empty increase total(space counter).
+                total ++;
+            }
+        }
+
+    if(total == (matriks[0].size()) * (matriks.size())){  // It checks whether the row length and the column length equals the total number of spaces.
+        return true;
+    }
+    return false;
+}
+bool Stuck(const vector<vector<char>>& matriks) { // This function checks that it is stuck or not.
+    for (int row = 0; row < matriks.size(); ++row) {
+        for (int col = 0; col < matriks[row].size(); ++col) {
+            char harf = matriks[row][col];
+
+            if (harf == 'r' && (col == matriks[row].size() - 1 || matriks[row][col + 1] == '-')) {
+                return true; // checks if it is in the end of the row or if the next column is empty or not
+            } else if (harf == 'l' && (col == 0 || matriks[row][col - 1] == '-')) {
+                return true; // checks if it is in the first element of the row or if the left column is empty or not
+            } else if (harf == 'u' && (row == 0 || matriks[row - 1][col] == '-')) {
+                return true; // checks if it is in top row or if the upper column is empty or not
+            } else if (harf == 'd' && (row == matriks.size() - 1 || matriks[row + 1][col] == '-')) {
+                return true; // checks if it is in the bottom row or if the down column is empty or not
+            }
+        }
+    }
+
+    return false;
+}
+
+int main() {
+    string fileName;
+    int row, column;
+    vector<vector<char>> matriks;
+
+    cout << "Please enter the file name: " << endl;
+    cin >> fileName; // take input for filename
+
+    ifstream input(fileName); // opens the file
+
+
+    while(input.fail()){ // it checks opened or not and takes input until opened
+        cout << "Could not open the file. Please enter a valid file name: " << endl;
+        cin >> fileName;
+        input.open(fileName);
+    }
+
+    string line;
+    while (getline(input, line)) { // it reads the file line by line
+        vector<char> satir;
+        for (int i = 0; i < line.size(); ++i) {
+            char c = line[i];
+            if(c == 'r' || c == 'u' || c == 'd' || c == 'l' || c == '-') { // it checks there is another letter in the file
+                satir.push_back(c); // if not it adds to the vector
+            } else
+                {
+                cout << "Erroneous file content. Program terminates." << endl;
+                return 0;
+                }
+            }
+        matriks.push_back(satir); // adds to the matrix
+    }
+
+    int columnCount = matriks[0].size(); // Number of elements of row 0 of the matrix
+    for(int a = 1; a < matriks.size(); ++a) {//Checks whether the number of elements of each row is the same as the number of elements of row 0
+        if (matriks[a].size() != columnCount) {  // if it is not equal it errors and stop.
+            cout << "Erroneous file content. Program terminates." << endl;
+            return 0;
+        }
+    }
+
+    cout << "The matrix file contains:" << endl;
+    for(int c = 0; c < matriks.size(); c++){  // print the matrix
+        for(int d = 0; d < matriks[c].size(); d++){
+            cout << matriks[c][d];
+        }
+        cout << endl;
+    }
+
+    if(boslukcheck(matriks) == true){  // checks it the matrix is all empty space or not.
+        cout << "The matrix is empty." << endl; // if it is it stops
+        return 0;
+    }
+    else if(Stuck(matriks) != true){  // checks if elements of the matrix stuck or not
+       cout << "No more moves are possible." << endl;
+       return 0;
+    }
+    cout << "Please enter the row and column of the tile that you want to move:" << endl;
+    cin >> row >> column; // takes input of row and column
+
+
+    while(boslukcheck(matriks) != true){ // until matrix is full empty space run and take input of row and column
+        while(row < 0 || row >= matriks.size() || column < 0 || column >= matriks[0].size()){ //Checks whether the entered row and column inputs are inside or outside the matrix
+            cout << "Invalid row or column index." << endl;
+            cout << "Please enter the row and column of the tile that you want to move:" << endl;
+            cin >> row >> column; // takes input for row and column
+        }
+        if(matriks[row][column] == 'r'){  // looks that is it r or not
+            if(rspace(row, column,matriks) == matriks[0].size() - column - 1){  // checks that can it go as far as the element allows
+                matriks[row][column] = '-';
+                cout << "Tile at (" << row << "," << column << ") has been moved." << endl;
+            }
+            else if(rspace(row,column, matriks) == 0){ // checks it has any space near the element or not
+                cout << "No tiles have been moved." << endl;
+            }
+            else{ // the row is not full and can go less than the matrix allows.
+                matriks[row][column] = '-';
+                matriks[row][column + rspace(row, column,matriks)] = 'r';
+                cout << "Tile at (" << row << "," << column << ") has been moved." << endl;
+            }
+
+        }
+        else if(matriks[row][column] == 'l'){// looks that is it l or not
+            if(lspace(row, column, matriks) == column){  // checks that can it go as far as the element allows
+                matriks[row][column] = '-';
+                cout << "Tile at (" << row << "," << column << ") has been moved." << endl;
+            }
+            else if(lspace(row, column, matriks) == 0){ // checks it has any space near the element or not
+                cout << "No tiles have been moved." << endl;
+            }
+            else{// the row is not full and can go less than the matrix allows.
+                matriks[row][column] = '-';
+                matriks[row][column - lspace(row, column, matriks)] = 'l';
+                cout << "Tile at (" << row << "," << column << ") has been moved." << endl;
+            }
+
+
+        }
+        else if(matriks[row][column] == 'u'){// looks that is it u or not
+            if(uspace(row, column, matriks) == row ){ // checks that can it go as far as the element allows
+                matriks[row][column] = '-';
+                cout << "Tile at (" << row << "," << column << ") has been moved." << endl;
+            }
+            else if(uspace(row, column, matriks) == 0){// checks it has any space near the element or not
+                cout << "No tiles have been moved." << endl;
+            }
+            else{// the column is not full and can go less than the matrix allows.
+                matriks[row][column] = '-';
+                matriks[row - uspace(row, column, matriks)][column] = 'u';
+                cout << "Tile at (" << row << "," << column << ") has been moved." << endl;
+            }
+
+        }
+        else if(matriks[row][column] == 'd'){// looks that is it d or not
+            if(dspace(row, column, matriks) == matriks.size() - row - 1){ // checks that can it go as far as the element allows
+                matriks[row][column] = '-';
+                cout << "Tile at (" << row << "," << column << ") has been moved." << endl;
+            }
+            else if(dspace(row, column, matriks) == 0){// checks it has any space near the element or not
+                cout << "No tiles have been moved." << endl;
+            }
+            else{// the column is not full and can go less than the matrix allows.
+                matriks[row][column] = '-';
+                matriks[row + dspace(row, column, matriks)][column] = 'd';
+                cout << "Tile at (" << row << "," << column << ") has been moved." << endl;
+            }
+
+
+        }
+        else if(matriks[row][column] == '-'){// looks that is it empty or not
+            cout << "No tiles have been moved." << endl;
+        }
+        for(int c = 0; c < matriks.size(); c++){  // print the matrix
+            for(int d = 0; d < matriks[c].size(); d++){
+                cout << matriks[c][d];
+            }
+            cout << endl;
+        }
+        if(boslukcheck(matriks) == true){ // checks matrix is full empty space or not, if it is all empty space it stops.
+            cout << "The matrix is empty." << endl;
+            return 0;
+        }
+        else if(Stuck(matriks) != true){ // it checks is it stuck or not. If it is stuck it stops.
+            cout << "No more moves are possible." << endl;
+            return 0;
+        }
+
+        cout << "Please enter the row and column of the tile that you want to move:" << endl;
+        cin >> row >> column;
+    }
+    for(int c = 0; c < matriks.size(); c++){ // print the matrix
+        for(int d = 0; d < matriks[c].size(); d++){
+            cout << matriks[c][d];
+        }
+        cout << endl;
+    }
+
+    return 0;
+}
